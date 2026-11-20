@@ -1,12 +1,47 @@
-<!doctype html><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="DA Flights">
 <link rel="apple-touch-icon" href="icon-512.png">
 <title>DA Flights</title>
 <style>
-  html,body{margin:0;height:100%;background:#fff}
-  iframe{position:fixed;top:env(safe-area-inset-top,0px);left:0;width:100%;border:0;
-    height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+  html, body { margin: 0; height: 100%; background: #fff; overflow: hidden; overscroll-behavior: none; }
+  /* Invisible element used only to read the phone's safe-area insets in pixels */
+  #probe {
+    position: fixed; left: 0; top: 0; width: 0; height: 0; visibility: hidden; pointer-events: none;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  iframe { position: fixed; left: 0; width: 100%; border: 0; background: #fff; }
 </style>
-<iframe src="https://script.google.com/macros/s/AKfycbx3Nbjwqk8tI2cZbX-PSgYgo5fPdRnace_h0dfpaIDpAWtGSYJ-ujPLgw0BOMYHj2MM/exec"></iframe>
+<div id="probe"></div>
+<iframe id="app" title="DA Flights" allow="clipboard-write"></iframe>
+<script>
+(function () {
+  // PASTE YOUR WEB APP URL HERE (the one ending in /exec)
+  var EXEC = 'https://script.google.com/macros/s/AKfycbx3Nbjwqk8tI2cZbX-PSgYgo5fPdRnace_h0dfpaIDpAWtGSYJ-ujPLgw0BOMYHj2MM/exec';
+
+  var frame = document.getElementById('app'), probe = document.getElementById('probe');
+  function inset(side) { return Math.round(parseFloat(getComputedStyle(probe)['padding' + side]) || 0); }
+
+  // Size the frame to what is actually visible: below the status bar, above Safari's bottom bar,
+  // all the way to the screen edge in the home screen app. The app adds the bottom spacing itself.
+  function layout() {
+    var top = inset('Top');
+    frame.style.top = top + 'px';
+    frame.style.height = Math.max(window.innerHeight - top, 0) + 'px';
+  }
+  layout();
+  window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', function () { setTimeout(layout, 150); });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
+  window.addEventListener('pageshow', layout);
+
+  // Load the app once the first layout is done, telling it how much bottom room to leave.
+  requestAnimationFrame(function () {
+    layout();
+    frame.src = EXEC + (EXEC.indexOf('?') > -1 ? '&' : '?') + 'sab=' + inset('Bottom');
+  });
+})();
+</script>
